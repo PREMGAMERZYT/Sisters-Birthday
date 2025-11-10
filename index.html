@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sister Birthday — Accurate IST Counter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", system-ui, Arial
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffb6c1, #ffc1cc);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .card {
+            width: 340px;
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 22px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(31, 38, 135, 0.12);
+        }
+
+        .photo-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap
+        }
+
+        .photo-item {
+            width: 110px;
+            height: 110px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 0 18px rgba(255, 255, 255, 0.35);
+            transition: transform .25s, box-shadow .25s
+        }
+
+        .photo-item:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 26px rgba(255, 105, 180, 0.9)
+        }
+
+        .glow {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff0f5;
+            text-shadow: 0 0 10px #ff80ab, 0 0 20px #ff4f81;
+            margin: 10px 0
+        }
+
+        .birth-info {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 0.95rem
+        }
+
+        #timer {
+            margin-top: 6px
+        }
+
+        button {
+            margin-top: 14px;
+            background: #ff4f81;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 22px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s
+        }
+
+        button:active {
+            transform: translateY(2px)
+        }
+
+        .confetti {
+            position: fixed;
+            top: -10px;
+            pointer-events: none;
+            border-radius: 3px;
+            z-index: 9999
+        }
+
+        .heart {
+            position: fixed;
+            top: -10px;
+            pointer-events: none;
+            z-index: 9998;
+            font-size: 20px
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0)
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0
+            }
+        }
+
+        @keyframes floatDown {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1
+            }
+
+            100% {
+                transform: translateY(110vh) scale(1.2);
+                opacity: 0
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="photo-gallery">
+            <img src="sister.jpg" alt="Sister 1" class="photo-item">
+            <img src="sister1.jpg" alt="Sister 2" class="photo-item">
+        </div>
+
+        <div><strong>Born on:</strong> 11 November 2007 (00:00 IST)</div>
+        <div class="glow">🌸 Sister, you have lived for:</div>
+
+        <div class="birth-info">
+            <div id="timer">Loading…</div>
+        </div>
+
+        <button id="celebrateBtn">💖 Celebrate</button>
+    </div>
+
+    <script>
+        (function () {
+            const celebrateBtn = document.getElementById('celebrateBtn');
+            const timerEl = document.getElementById('timer');
+
+            // ---------- visual: confetti & hearts ----------
+            celebrateBtn.addEventListener('click', () => {
+                for (let i = 0; i < 36; i++) createConfetti();
+                for (let i = 0; i < 20; i++) createHeart();
+            });
+
+            function randomColor() {
+                const cols = ['#ff4f81', '#ffafcc', '#a2d2ff', '#cdb4db', '#f6bd60', '#f28482'];
+                return cols[Math.floor(Math.random() * cols.length)];
+            }
+
+            function createConfetti() {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                const w = Math.random() * 10 + 6;
+                el.style.width = w + 'px';
+                el.style.height = (w * 0.6) + 'px';
+                el.style.left = (Math.random() * 90 + 5) + 'vw';
+                el.style.background = randomColor();
+                const dur = (Math.random() * 2.6) + 2.0; // 2.0 - 4.6s
+                el.style.animation = `fall ${dur}s linear forwards`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), (dur * 1000) + 300);
+            }
+
+            function createHeart() {
+                const el = document.createElement('div');
+                el.className = 'heart';
+                el.textContent = '💖';
+                const size = Math.random() * 22 + 12;
+                el.style.fontSize = size + 'px';
+                el.style.left = (Math.random() * 90 + 5) + 'vw';
+                el.style.color = randomColor();
+                const dur = (Math.random() * 3) + 4; // 4 - 7s
+                el.style.animation = `floatDown ${dur}s linear forwards`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), (dur * 1000) + 400);
+            }
+
+            // ---------- Accurate age calculation (UTC canonical) ----------
+            // IST offset in ms
+            const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+            // Birth moment: 11 Nov 2007 00:00 IST
+            // Convert that IST instant to UTC epoch ms (canonical):
+            // 11 Nov 2007 00:00 IST == 10 Nov 2007 18:30 UTC
+            const birthUTCms = Date.UTC(2007, 10, 10, 18, 30, 0); // months zero-based
+
+            // Compute age components relative to the *most recent* birthday instant in IST
+            function computeAgeComponents() {
+                const nowUTCms = Date.now(); // current UTC epoch ms
+
+                // If now is before birth moment (unlikely), return zeros
+                if (nowUTCms < birthUTCms) return { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+                // compute IST "now" components by shifting UTC -> IST
+                const nowISTms = nowUTCms + IST_OFFSET_MS;
+                const nowIST = new Date(nowISTms);
+                const birthISTms = birthUTCms + IST_OFFSET_MS;
+                const birthIST = new Date(birthISTms);
+
+                // calendar components in IST using UTC getters on shifted times
+                const nowY = nowIST.getUTCFullYear();
+                const nowM = nowIST.getUTCMonth();
+                const nowD = nowIST.getUTCDate();
+                const nowH = nowIST.getUTCHours();
+                const nowMin = nowIST.getUTCMinutes();
+                const nowS = nowIST.getUTCSeconds();
+
+                const birthY = birthIST.getUTCFullYear();
+                const birthM = birthIST.getUTCMonth();
+                const birthD = birthIST.getUTCDate();
+                const birthH = birthIST.getUTCHours();
+                const birthMin = birthIST.getUTCMinutes();
+                const birthS = birthIST.getUTCSeconds();
+
+                // initial year difference
+                let years = nowY - birthY;
+
+                // check if current IST datetime is before this year's birthday moment -> subtract one
+                let beforeThisYearBirthday = false;
+                if (nowM < birthM) beforeThisYearBirthday = true;
+                else if (nowM === birthM) {
+                    if (nowD < birthD) beforeThisYearBirthday = true;
+                    else if (nowD === birthD) {
+                        if (nowH < birthH) beforeThisYearBirthday = true;
+                        else if (nowH === birthH) {
+                            if (nowMin < birthMin) beforeThisYearBirthday = true;
+                            else if (nowMin === birthMin) {
+                                if (nowS < birthS) beforeThisYearBirthday = true;
+                            }
+                        }
+                    }
+                }
+                if (beforeThisYearBirthday) years--;
+
+                // Build most recent birthday IST calendar year
+                const recentBirthdayISTYear = birthY + years;
+
+                // Convert that IST calendar datetime to UTC epoch ms:
+                // recentBirthdayUTCms = UTC epoch of (recentBirthdayISTYear, birthM, birthD, birthH, birthMin, birthS) minus IST offset
+                const recentBirthdayUTCms = Date.UTC(
+                    recentBirthdayISTYear,
+                    birthM,
+                    birthD,
+                    birthH,
+                    birthMin,
+                    birthS
+                ) - IST_OFFSET_MS;
+
+                // remaining ms since the most recent birthday (UTC)
+                let remainingMs = nowUTCms - recentBirthdayUTCms;
+                if (remainingMs < 0) remainingMs = 0;
+
+                const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+                remainingMs -= days * (1000 * 60 * 60 * 24);
+
+                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                remainingMs -= hours * (1000 * 60 * 60);
+
+                const minutes = Math.floor(remainingMs / (1000 * 60));
+                remainingMs -= minutes * (1000 * 60);
+
+                const seconds = Math.floor(remainingMs / 1000);
+
+                return { years, days, hours, minutes, seconds };
+            }
+
+            function updateTimerUI() {
+                const c = computeAgeComponents();
+                timerEl.innerHTML = `<strong>${c.years}</strong> Years, <strong>${c.days}</strong> Days,<br>
+        <strong>${c.hours}</strong> Hours, <strong>${c.minutes}</strong> Minutes, <strong>${c.seconds}</strong> Seconds ✨`;
+            }
+
+            updateTimerUI();
+            setInterval(updateTimerUI, 1000);
+
+        })();
+    </script>
+</body>
+
+</html>
